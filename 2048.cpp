@@ -30,11 +30,14 @@ block defaultBlock = block(0, false);
 bool quit = false;
 int level = 1;
 bool win = false;
+int point = 0;
 bool autoSave = true;
 bool haveSave = false;
-std::vector<int> newBlock = {};
+std::vector<int> newBlock = {}; // {row, col, val, check}
 std::ifstream input("save.txt");
 std::ifstream config("config.txt");
+std::ifstream stats("stats.txt");
+const std::vector<int> pointGain = {4,8,16,32,64,128,256,512,1024,2048};
 
 void viewBoard();
 
@@ -50,7 +53,7 @@ void saveGame() {
 		}
 		output << std::endl;
 	}
-	output << win;
+	output << win << std::endl << point;
 }
 
 void loadSave() {
@@ -68,7 +71,7 @@ void loadSave() {
 		}
 	}
 	level = max;
-	input >> win;
+	input >> win >> point;
 }
 
 void updateBoardUp() {
@@ -109,7 +112,7 @@ void updateBoardUp() {
 						}
 					}
 				}
-				SDL_Delay(1);
+				//SDL_Delay(1);
 				movedPixel += 5;
 				SDL_UpdateWindowSurface(window);
 			}
@@ -123,6 +126,7 @@ void updateBoardUp() {
 						else {
 							a[row - 1][col] = block(a[row - 1][col].value + 1, true);
 							if (a[row - 1][col].value > level) level++;
+							point += pointGain[a[row][col].value];
 							a[row][col] = defaultBlock;
 							blankSpace++;
 						}
@@ -171,7 +175,7 @@ void updateBoardLeft() {
 						}
 					}
 				}
-				SDL_Delay(1);
+				//SDL_Delay(1);
 				movedPixel += 5;
 				SDL_UpdateWindowSurface(window);
 			}
@@ -185,6 +189,7 @@ void updateBoardLeft() {
 						else {
 							a[row][col - 1] = block(a[row][col - 1].value + 1, true);
 							if (a[row][col - 1].value > level) level++;
+							point += pointGain[a[row][col].value];
 							a[row][col] = defaultBlock;
 							blankSpace++;
 						}
@@ -233,7 +238,7 @@ void updateBoardDown() {
 						}
 					}
 				}
-				SDL_Delay(1);
+				//SDL_Delay(1);
 				movedPixel += 5;
 				SDL_UpdateWindowSurface(window);
 			}
@@ -247,6 +252,7 @@ void updateBoardDown() {
 						else {
 							a[row + 1][col] = block(a[row + 1][col].value + 1, true);
 							if (a[row + 1][col].value > level) level++;
+							point += pointGain[a[row][col].value];
 							a[row][col] = defaultBlock;
 							blankSpace++;
 						}
@@ -295,7 +301,7 @@ void updateBoardRight() {
 						}
 					}
 				}
-				SDL_Delay(1);
+				//SDL_Delay(1);
 				movedPixel += 5;
 				SDL_UpdateWindowSurface(window);
 			}
@@ -309,6 +315,7 @@ void updateBoardRight() {
 						else {
 							a[row][col + 1] = block(a[row][col + 1].value + 1, true);
 							if (a[row][col + 1].value > level) level++;
+							point += pointGain[a[row][col].value];
 							a[row][col] = defaultBlock;
 							blankSpace++;
 						}
@@ -324,7 +331,7 @@ int randomGenerate() {
 	return r > 90 ? 2 : 1;
 }
 
-void blockGenAnima(int row, int col,int val) {
+void blockGenerateAnimation(int row, int col,int val) {
 	SDL_Rect block{ 100 * col,100 * row,90,90 };
 	for (int size = 10; size <= 90; size += 10) {
 		SDL_FillRect(windowSurface, &block, SDL_MapRGB(windowSurface->format,0, 0, 0));
@@ -399,6 +406,8 @@ void checking() {
 		if (gameOver()) {
 			//gotoxy(0, 16);
 			stringOutput((std::string)"GAME OVER");
+			std::string s = "Score: " + std::to_string(point);
+			stringOutput(s);
 			over = true;
 		}
 	}
@@ -417,6 +426,8 @@ void updateBoard() {
 		if (gameOver()) {
 			//gotoxy(0, 16);
 			stringOutput((std::string)"GAME OVER");
+			std::string s = "Score: " + std::to_string(point);
+			stringOutput(s);
 			over = true;
 			return;
 		}
@@ -497,43 +508,14 @@ void viewBlock(int row, int col) {
 }
 
 void viewBoard() {
-	/*system("cls");
-
-	std::cout << ' ';
-	for (int i = 0; i < 25; i++) {
-		std::cout << '_';
-	}
-	gotoxy(1, 14);
-
-	for (int i = 0; i < 25; i++) {
-		std::cout << '_';
-	}
-
-	for (int i = 1; i <= 14; i++) {
-		gotoxy(0, i);
-		std::cout << '|';
-		gotoxy(26, i);
-		std::cout << '|';
-	}
-
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			if (a[i][j].value != 0) viewBlock(i, j);
-		}
-	}
-
-	gotoxy(27, 14);*/
 	SDL_Rect r;
 	r.x = 0;
 	r.y = 0;
 	r.w = 640;
 	r.h = 480;
 
-	//SDL_Surface* s1 = NULL;
-	//SDL_BlitScaled(s1, NULL, windowSurface, &r); 
-
 	SDL_FillRect(windowSurface, 0, 0x00);
-	//SDL_UpdateWindowSurface(window);
+
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
 			if (a[i][j].value != 0) 
@@ -541,7 +523,7 @@ void viewBoard() {
 		}
 	}
 	if (newBlock.size() > 0 && newBlock[3]) {
-		blockGenAnima(newBlock[0], newBlock[1], newBlock[2]);
+		blockGenerateAnimation(newBlock[0], newBlock[1], newBlock[2]);
 		newBlock[3] = 0;
 	}
 	SDL_UpdateWindowSurface(window);
@@ -568,7 +550,8 @@ int mainMenu() {
 	if (haveSave) {
 		stringOutput((std::string)"[1] Continue last game");
 		stringOutput((std::string)"[2] New game");
-		stringOutput((std::string)"[3] Setting (under development)");
+		stringOutput((std::string)"[3] Setting");
+		stringOutput((std::string)"[Esc] Quit");
 		bool k = false;
 		while (!k) {
 			char c = _getch();
@@ -583,6 +566,9 @@ int mainMenu() {
 				setting();
 				return mainMenu();
 				break;
+			case 27:
+				return 0;
+				break;
 			default:
 				break;
 			}
@@ -590,7 +576,8 @@ int mainMenu() {
 	}
 	else {
 		stringOutput((std::string)"[1] New game");
-		stringOutput((std::string)"[2] Setting (under development)");
+		stringOutput((std::string)"[2] Setting");
+		stringOutput((std::string)"[Esc] Quit");
 		bool k = false;
 		while (!k) {
 			char c = _getch();
@@ -601,6 +588,9 @@ int mainMenu() {
 			case '2':
 				setting();
 				return mainMenu();
+				break;
+			case 27:
+				return 0;
 				break;
 			default:
 				break;
@@ -677,6 +667,12 @@ void setting() {
 	config << autoSave;
 }
 
+void statistics() {
+	system("cls");
+	stringOutput((std::string)"STATISTICS");
+	
+}
+
 int main(int agrc, char* agrs[]) {
 	srand(time(NULL));
 	config.clear();
@@ -688,27 +684,38 @@ int main(int agrc, char* agrs[]) {
 
 	int option = mainMenu();
 	
-	stringOutput((std::string)"Loading...");
-	Sleep(1000);
 	bool notagain = false;
 	while (!notagain) {
-		gamewindow::Init();
-		gamewindow::loadMedia();
 		//system("cls");
 		switch (option) {
 		case 1:
+			stringOutput((std::string)"Loading...");
+			Sleep(1000);
+			gamewindow::Init();
+			gamewindow::loadMedia();
 			loadSave();
 			break;
 		case 2:
+			stringOutput((std::string)"Loading...");
+			Sleep(1000);
+			gamewindow::Init();
+			gamewindow::loadMedia();
+			haveSave = true;
 			newBlock = addRandomGeneratedBlock(blankSpace);
 			break;
+		case 0:
+			stringOutput((std::string)"See you next time...");
+			return 0;
+			break;
 		}
+
 		while ((!over) && (!quit)) {
 			viewBoard();
 			updateBoard();
 		}
+
 		if (quit) {
-			stringOutput((std::string)"Program quitted. See you again...");
+			stringOutput((std::string)"Game quitted. See you again...");
 			Sleep(1000);
 			notagain = true;
 		}
@@ -722,7 +729,6 @@ int main(int agrc, char* agrs[]) {
 				char c = _getch();
 				switch (c) {
 				case 'y':
-					stringOutput((std::string)"LOADING...");
 					option = 2;
 					Sleep(2000);
 					notagain = false;
