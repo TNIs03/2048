@@ -112,7 +112,7 @@ void updateBoardUp() {
 						}
 					}
 				}
-				//SDL_Delay(1);
+				SDL_Delay(1);
 				movedPixel += 5;
 				SDL_UpdateWindowSurface(window);
 			}
@@ -175,7 +175,7 @@ void updateBoardLeft() {
 						}
 					}
 				}
-				//SDL_Delay(1);
+				SDL_Delay(1);
 				movedPixel += 5;
 				SDL_UpdateWindowSurface(window);
 			}
@@ -238,7 +238,7 @@ void updateBoardDown() {
 						}
 					}
 				}
-				//SDL_Delay(1);
+				SDL_Delay(1);
 				movedPixel += 5;
 				SDL_UpdateWindowSurface(window);
 			}
@@ -301,7 +301,7 @@ void updateBoardRight() {
 						}
 					}
 				}
-				//SDL_Delay(1);
+				SDL_Delay(1);
 				movedPixel += 5;
 				SDL_UpdateWindowSurface(window);
 			}
@@ -730,7 +730,6 @@ int main(int agrc, char* agrs[]) {
 				switch (c) {
 				case 'y':
 					option = 2;
-					Sleep(2000);
 					notagain = false;
 					flag = true;
 					break;
